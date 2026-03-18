@@ -13,6 +13,8 @@ class BuildProto(setuptools.Command):
         pass
 
     def run(self):
+        subprocess.run(["mkdir", "-p", "cartaicdproto"])
+        
         proto_files = glob.glob('carta-protobuf/*/*.proto')
         proto_dirs = set(os.path.dirname(f) for f in proto_files)
         includes = [f"-I{d}" for d in proto_dirs]
@@ -35,6 +37,14 @@ class BuildProto(setuptools.Command):
                 # We also automatically import all the submodules to allow discovery    
                 submodule = os.path.splitext(os.path.basename(pb2_file))[0]
                 initfile.write(f"from . import {submodule} as {submodule[:-4]}\n")
+                
+            # Automatically parse the version from the docs
+            with open('carta-protobuf/docs/src/changelog.rst') as f:
+                data = f.read()
+            
+            icd_version = re.findall(r'   \* - ``(\d+)\.\d+\.\d+``', data)[0]
+            initfile.write(f"MAJOR_VERSION = {icd_version}\n")
+                
         
         # This is a horrible hack; it may be fixed in the latest protoc
         with open('cartaicdproto/enums_pb2.py') as f:
@@ -66,9 +76,9 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires='>=3.10',
     install_requires=[
-        "websockets>=8.1",
+        "websockets>=9.1",
     ],
     cmdclass={
         "build_py": BuildPy,

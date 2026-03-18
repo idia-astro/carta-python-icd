@@ -2,6 +2,7 @@
 
 # Usage example: open the specified file.
 # Run your desired backend executable with --no_browser --debug_no_auth
+# TODO: support entering a token; use env variable instead
 
 import os
 import sys
@@ -10,7 +11,7 @@ from cartaicd.client import Client
 import cartaicdproto as cp
     
 # Create the client -- this automatically connects and registers with the backend
-client = Client("localhost", 3002, 24) # TODO: parse ICD version dynamically out of the protobuf docs
+client = Client("localhost", 3002)
 
 ack = client.received_history[-1]
 if "Invalid ICD version number" in ack.message:
