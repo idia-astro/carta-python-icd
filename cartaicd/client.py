@@ -23,8 +23,8 @@ for cp_key, cp_val in cp.__dict__.items():
                     EVENT_TYPE_TO_MSG_CLASS[event_type] = val
 
 class Client:
-    def __init__(self, host, port):
-        self.url = f"ws://{host}:{port}/websocket"
+    def __init__(self, host, port, token):
+        self.url = f"ws://{host}:{port}/websocket?token={token}"
         self.sent_history = []
         self.received_history = []
 

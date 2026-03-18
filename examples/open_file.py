@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
 
 # Usage example: open the specified file.
-# Run your desired backend executable with --no_browser --debug_no_auth
-# TODO: support entering a token; use env variable instead
+# Run your desired backend executable like this: CARTA_AUTH_TOKEN=TEST_TOKEN carta --no_browser
 
 import os
 import sys
+import re
 
 from cartaicd.client import Client
 import cartaicdproto as cp
-    
+
 # Create the client -- this automatically connects and registers with the backend
-client = Client("localhost", 3002)
+client = Client("localhost", 3002, "TEST_TOKEN")
 
 ack = client.received_history[-1]
 if "Invalid ICD version number" in ack.message:

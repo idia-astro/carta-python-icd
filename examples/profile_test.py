@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 # Usage example: requesting spatial profiles
-# TODO: support entering a token; use env variable instead
+# Run your desired backend executable like this: CARTA_AUTH_TOKEN=TEST_TOKEN carta --no_browser
 
 import os
 import argparse
@@ -23,7 +23,7 @@ parser.add_argument('--mip', type=int, default=0, help='Mip (used for both profi
 args = parser.parse_args()
     
 # Create the client -- this automatically connects and registers with the backend
-client = Client("localhost", 3002)
+client = Client("localhost", 3002, "TEST_TOKEN")
 
 ack = client.received_history[-1]
 if "Invalid ICD version number" in ack.message:
