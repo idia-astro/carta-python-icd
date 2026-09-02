@@ -10,7 +10,7 @@ import cartaicdproto as cp
 try:
     from google._upb._message import MessageMeta
 except ModuleNotFoundError:
-    from google.protobuf.pyext.cpp_message import MessageMeta
+    from google.protobuf.pyext._message import MessageMeta
 
 MSG_CLASS_TO_EVENT_TYPE = {}
 EVENT_TYPE_TO_MSG_CLASS = {}
