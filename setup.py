@@ -4,6 +4,7 @@ import subprocess
 import glob
 import setuptools
 from distutils.command.build_py import build_py as build_py_orig
+from packaging.version import Version
 
 class BuildProto(setuptools.Command):
     def initialize_options(self):
@@ -18,16 +19,20 @@ class BuildProto(setuptools.Command):
         proto_files = glob.glob('carta-protobuf/*/*.proto')
         proto_dirs = set(os.path.dirname(f) for f in proto_files)
         includes = [f"-I{d}" for d in proto_dirs]
-        subprocess.run([
-            'protoc',
-            *includes,
-            '--python_out=cartaicdproto/',
-            *proto_files,
-        ])
+        outputs = ['--python_out=cartaicdproto/']
+
+        result = subprocess.run(['protoc', '--version'], capture_output=True, text=True)
+        protoc_version = Version(re.search('libprotoc (.*)', result.stdout.strip()).group(1))
+        if protoc_version >= Version("3.20.0"):
+            # This is necessary to generate stubs since protobuf v3.20.0
+            outputs.append('--pyi_out=cartaicdproto/')
+
+        subprocess.run(['protoc', *includes, *outputs, *proto_files])
         
         with open('cartaicdproto/__init__.py', 'w') as initfile:
             for pb2_file in glob.glob('cartaicdproto/*_pb2.py'):
                 # There seriously isn't a better way to fix this relative import as of time of writing
+                # See https://github.com/protocolbuffers/protobuf/issues/1491
                 with open(pb2_file) as f:
                     data = f.read()
                 data = re.sub("^(import .*_pb2)", r"from . \1", data, flags=re.MULTILINE)
@@ -44,14 +49,6 @@ class BuildProto(setuptools.Command):
             
             icd_version = re.findall(r'   \* - ``(\d+)\.\d+\.\d+``', data)[0]
             initfile.write(f"MAJOR_VERSION = {icd_version}\n")
-                
-        
-        # This is a horrible hack; it may be fixed in the latest protoc
-        with open('cartaicdproto/enums_pb2.py') as f:
-            data = f.read()
-        data = re.sub("^None = 0$", "globals()['None'] = 0", data, flags=re.MULTILINE)
-        with open('cartaicdproto/enums_pb2.py', 'w') as f:
-            f.write(data)
         
 class BuildPy (build_py_orig):
     def run(self):

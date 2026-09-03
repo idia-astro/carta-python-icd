@@ -7,7 +7,10 @@ import numpy as np
 import websockets
 
 import cartaicdproto as cp
-from google.protobuf.pyext.cpp_message import GeneratedProtocolMessageType
+try:
+    from google._upb._message import MessageMeta
+except ModuleNotFoundError:
+    from google.protobuf.pyext._message import MessageMeta
 
 MSG_CLASS_TO_EVENT_TYPE = {}
 EVENT_TYPE_TO_MSG_CLASS = {}
@@ -15,7 +18,7 @@ EVENT_TYPE_TO_MSG_CLASS = {}
 for cp_key, cp_val in cp.__dict__.items():
     if cp_key.endswith("_pb2") and cp_key not in ("enums_pb2", "defs_pb2"):
         for key, val in cp_val.__dict__.items():
-            if isinstance(val, GeneratedProtocolMessageType):
+            if isinstance(val, MessageMeta):
                 event_name = re.sub('([a-z])([A-Z])', r'\1_\2', key).upper()
                 event_type = getattr(cp.enums.EventType, event_name, None)
                 if event_type is not None:
